@@ -3,21 +3,21 @@
     <meta charset="utf-8">
     <style>
         line{
-            opacity:0;
+            /* opacity:0; */
             stroke:rgba(13, 112, 87, 0.3); /*rgba(255,255,255,0.5);*/
             stroke-width:0.5;
             stroke-linecap: round;
-            -webkit-transition: all 1s ease;
+            /* -webkit-transition: all 1s ease;
             -moz-transition: all 1s ease;
             -o-transition: all 1s ease;
-            transition: all 1s ease;
+            transition: all 1s ease; */
         }
 
         svg{
             background-color:white;
         }
 
-        .delay.delay0{
+        /* .delay.delay0{
             transition-delay: 0s;
             -webkit-transition-delay: 0s;
             -moz-transition-delay: 0s;
@@ -53,21 +53,25 @@
             -webkit-transition-delay: 2.5s;
             -moz-transition-delay: 2.5s;
             -o-transition-delay: 2.5s;
-        }
+        } */
     </style>
 </head>
 <body>
+    <canvas></canvas>
 <script src="https://d3js.org/d3.v6.min.js"></script>
+<script type="text/javascript" src="https://unpkg.com/canvg@2.0.0/dist/browser/canvg.min.js"></script>
 <script>
 
-const width = 1000;
-const height = 1000;
+const width = 850;
+const height = 750;
 const treeWidth = 100;
 const treeHeight = 200;
-const gap = 20;
-const margin = 20;
+const gap = 25;
+const margin = 50;
 const trunkClear = 5;
 const trunkTop = 5;
+
+const generateSequence = false;
 
 const svg = d3.select('body').append('svg')
     .attr('width', width)
@@ -93,6 +97,8 @@ const buildTree = (col, row) => {
     g.append('line')
         .attr('class', 'delay delay0')
         .style('stroke-width', trunkWidth)
+        .style('stroke','rgba(13, 112, 87, 0.3)')
+        .style('stroke-linecap', 'round')
         .attr('x1', 0)
         .attr('x2', 0)
         .attr('y1', treeHeight)
@@ -120,6 +126,8 @@ const buildTree = (col, row) => {
             branch.append('line')
                 .attr('class', 'delay delay1')
                 .style('stroke-width', 1.5)
+                .style('stroke','rgba(13, 112, 87, 0.3)')
+                .style('stroke-linecap', 'round')
                 .attr('x1', x1)
                 .attr('x2', x2)
                 .attr('y1', y1)
@@ -152,6 +160,8 @@ const drawSubs = (x1, x2, y1, y2, s, subs, branch, tAngle, tRadius, ctAngle, lev
             .append('line')
                 .attr('class', 'delay delay' + (level + 1))
                 .style('stroke-width', 1.5 * (subTotal - level) / subTotal)
+                .style('stroke','rgba(13, 112, 87, 0.3)')
+                .style('stroke-linecap', 'round')
                 .attr('x1', 0)
                 .attr('y1', 0)
                 .attr('x2', sx2)
@@ -176,15 +186,44 @@ const y = (radius, angle) => {
     return radius * Math.sin(Math.PI / 180 * angle);
 };
 
-for (let col = 0; col < Math.floor((width-margin*2+gap) / (treeWidth+gap)); col += 1) {
-    for (let row = 0; row < Math.floor((height-margin*2+gap) / (treeHeight+gap)); row += 1) {
-        buildTree(col, row);
+const buildSet = () => {
+    for (let col = 0; col < Math.floor((width-margin*2+gap) / (treeWidth+gap)); col += 1) {
+        for (let row = 0; row < Math.floor((height-margin*2+gap) / (treeHeight+gap)); row += 1) {
+            buildTree(col, row);
+        }
     }
-}
+};
 
-window.requestAnimationFrame(() => {
-    setTimeout(() => {d3.selectAll('line').style('opacity', 1);}, 1000);
-});
+let setNum = 0;
+
+const paint = async () => {
+    svg.selectAll('*').remove();
+    buildSet();
+    
+    if (generateSequence) {
+        const canvas = document.querySelector('canvas');
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, width, height);
+        canvg(canvas, svg.node().parentNode.innerHTML);
+        
+        var dataURL = canvas.toDataURL('image/png');
+        var downloadAnchorNode = document.createElement('a');
+        downloadAnchorNode.setAttribute("href",     dataURL);
+        downloadAnchorNode.setAttribute("download", "seq" + setNum + ".png");
+        document.body.appendChild(downloadAnchorNode); // required for firefox
+        downloadAnchorNode.click();
+        downloadAnchorNode.remove();
+        setNum += 1;
+        if (setNum < 50) {
+            window.requestAnimationFrame(paint);
+        }
+    }
+};
+
+window.requestAnimationFrame(paint);
 
 
 </script>
