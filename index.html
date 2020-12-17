@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        line{
+            stroke:rgba(151, 11, 11, 0.3); /*rgba(255,255,255,0.5);*/
+            stroke-width:0.5;
+            stroke-linecap: round;
+        }
+        svg{
+            background-color:white;
+        }
+    </style>
+</head>
+<body>
+<script src="https://d3js.org/d3.v6.min.js"></script>
+<script>
+
+const width = 1000;
+const height = 1000;
+const treeWidth = 100;
+const treeHeight = 200;
+const gap = 20;
+const margin = 20;
+const trunkClear = 5;
+const trunkTop = 5;
+
+const svg = d3.select('body').append('svg')
+    .attr('width', width)
+    .attr('height', height)
+    .style('width', width + 'px')
+    .style('height', height + 'px')
+    .append('g')
+        .attr('transform', `translate(${margin}, ${margin})`);
+
+const buildTree = (col, row) => {
+
+    const g = svg.append('g')
+        .attr('transform', `translate(${col * (treeWidth + gap) + treeWidth / 2}, ${row * (treeHeight + gap)})`);
+
+    const height = treeHeight * (0.5 + Math.random()/2);
+    const width = treeWidth/6 + Math.random()*treeWidth/3;
+    const stepCount = 7 + Math.round(5 * Math.random());
+
+    const subStepGrowth = 6 + 3 * Math.random();
+    const trunkWidth =  2 + Math.random()*2;
+
+    // trunk
+    g.append('line')
+        .style('stroke-width', trunkWidth)
+        .attr('x1', 0)
+        .attr('x2', 0)
+        .attr('y1', treeHeight)
+        .attr('y2', treeHeight - height);
+    
+    // main branch
+    const tAngle = Math.random() * 40;
+    const ctAngle = 15 + Math.random() * 60;
+    for (let b = 0; b < stepCount; b += 1) {
+        const tRadius = width / stepCount * (b + 1);
+        const subs = 1 + Math.floor(subStepGrowth/stepCount*b);
+        const branch = g.append('g').attr('transform', `translate(${0}, ${trunkTop + treeHeight - height + b * ((height-trunkClear-trunkTop) / stepCount)})`);
+        [1,-1].forEach((direction) => {
+
+            let dAngle = tAngle;
+            if (direction === -1) {
+                dAngle = 180 - tAngle;
+            }
+
+            const x1 = trunkWidth / 2  * direction;
+            const x2 = x(tRadius, dAngle) + trunkWidth/2 * direction;
+            const y1 = 0;
+            const y2 = y(tRadius, dAngle);
+
+            branch.append('line')
+                .style('stroke-width', 1.5)
+                .attr('x1', x1)
+                .attr('x2', x2)
+                .attr('y1', y1)
+                .attr('y2', y2);
+            
+            for (let s = 0; s < subs; s += 1) {
+                drawSubs(x1, x2, y1, y2, s, subs, branch, dAngle, tRadius, ctAngle, 1, subs)
+            }
+        });
+    }
+};
+
+const drawSubs = (x1, x2, y1, y2, s, subs, branch, tAngle, tRadius, ctAngle, level, subTotal) => {
+    const px = x1 + ((x2-x1) / subs * s);
+    const py = y1 + ((y2-y1) / subs * s);
+    // const radius = tRadius / subs / subs * (subs - s) * 0.75; 
+    const radius = tRadius / subTotal * (subTotal - level) * 0.75; 
+
+    [1,-1].forEach((direction) => {
+        let dAngle = tAngle + ctAngle;
+        if (direction === -1) {
+            dAngle -= ctAngle*2;
+        }
+
+        const sx2 = x(radius, dAngle);
+        const sy2 = y(radius,  dAngle);
+
+        branch.append('g')
+            .attr('transform', `translate(${px}, ${py})`)
+            .append('line')
+                .style('stroke-width', 1.5 * (subTotal - level) / subTotal)
+                .attr('x1', 0)
+                .attr('y1', 0)
+                .attr('x2', sx2)
+                .attr('y2', sy2);
+        
+        if ( s < subs - 1) {
+            for (let ss = 1; ss < (subs - s); ss += 1) {
+                // if (radius / (subs - s) / (subs - s) * ((subs - s) - ss) * 0.75 > 4) {
+                if(radius / subTotal * (subTotal - (level + 1)) * 0.75 > 4){
+                    drawSubs(px, px+sx2, py, py+sy2, ss, subs - s, branch, dAngle, radius, ctAngle, level + 1, subTotal);
+                }
+            }
+        }
+    });
+};
+
+const x = (radius, angle) => {
+    return radius * Math.cos(Math.PI / 180 * angle);
+};
+
+const y = (radius, angle) => {
+    return radius * Math.sin(Math.PI / 180 * angle);
+};
+
+for (let col = 0; col < Math.floor((width-margin*2+gap) / (treeWidth+gap)); col += 1) {
+    for (let row = 0; row < Math.floor((height-margin*2+gap) / (treeHeight+gap)); row += 1) {
+        buildTree(col, row);
+    }
+}
+
+</script>
+</body>
+</html>
