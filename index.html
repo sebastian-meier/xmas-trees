@@ -40,7 +40,7 @@ const buildTree = (col, row) => {
 
     const height = treeHeight * (0.5 + Math.random()/2);
     const width = treeWidth/6 + Math.random()*treeWidth/3;
-    const stepCount = 7 + Math.round(5 * Math.random());
+    const stepCount = 7 + Math.round(8 * Math.random());
 
     const subStepGrowth = 6 + 3 * Math.random();
     const trunkWidth =  2 + Math.random()*2;
@@ -55,7 +55,7 @@ const buildTree = (col, row) => {
     
     // main branch
     const tAngle = Math.random() * 40;
-    const ctAngle = 15 + Math.random() * 60;
+    const ctAngle = 15 + Math.random() * 150;
     for (let b = 0; b < stepCount; b += 1) {
         const tRadius = width / stepCount * (b + 1);
         const subs = 1 + Math.floor(subStepGrowth/stepCount*b);
