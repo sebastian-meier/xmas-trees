@@ -54,7 +54,7 @@ const buildTree = (col, row) => {
         .attr('y2', treeHeight - height);
     
     // main branch
-    const tAngle = Math.random() * 40;
+    const tAngle = Math.random() * 60;
     const ctAngle = 15 + Math.random() * 150;
     for (let b = 0; b < stepCount; b += 1) {
         const tRadius = width / stepCount * (b + 1);
