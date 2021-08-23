@@ -62,23 +62,32 @@
 <script type="text/javascript" src="https://unpkg.com/canvg@2.0.0/dist/browser/canvg.min.js"></script>
 <script>
 
-const width = 850;
-const height = 750;
-const treeWidth = 100;
-const treeHeight = 200;
-const gap = 25;
-const margin = 50;
-const trunkClear = 5;
-const trunkTop = 5;
+const multi = 3;
+const width = 850*multi;
+const height = 1175*multi;
+const treeWidth = 100*multi;
+const treeHeight = 175*multi;
+const gap = 25*multi;
+const margin = 50*multi;
+const trunkClear = 5*multi;
+const trunkTop = 5*multi;
 
-const generateSequence = false;
+const generateSequence = true;
 
-const svg = d3.select('body').append('svg')
+const root = d3.select('body').append('div').append('svg')
     .attr('width', width)
     .attr('height', height)
     .style('width', width + 'px')
-    .style('height', height + 'px')
-    .append('g')
+    .style('height', height + 'px');
+
+root.append('rect')
+    .style('fill', 'white')
+    .attr('x', 0)
+    .attr('y', 0)
+    .attr('height', height)
+    .attr('width', width);
+
+const svg = root.append('g')
         .attr('transform', `translate(${margin}, ${margin})`);
 
 const buildTree = (col, row) => {
@@ -207,7 +216,7 @@ const paint = async () => {
 
         const ctx = canvas.getContext('2d');
         ctx.clearRect(0, 0, width, height);
-        canvg(canvas, svg.node().parentNode.innerHTML);
+        canvg(canvas, root.node().parentNode.innerHTML);
         
         var dataURL = canvas.toDataURL('image/png');
         var downloadAnchorNode = document.createElement('a');
@@ -217,9 +226,9 @@ const paint = async () => {
         downloadAnchorNode.click();
         downloadAnchorNode.remove();
         setNum += 1;
-        if (setNum < 50) {
-            window.requestAnimationFrame(paint);
-        }
+        // if (setNum < 50) {
+        //     window.requestAnimationFrame(paint);
+        // }
     }
 };
 
